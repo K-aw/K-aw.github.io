@@ -69,3 +69,48 @@ canvas.addEventListener("touchmove", (event) => {
     canvas.style.cursor = over ? "pointer" : "default";
   }
 }, { passive: true });
+
+// 分享与二维码生成
+const shareBtn = document.getElementById('shareBtn');
+const qrcodeModal = document.getElementById('qrcodeModal');
+const qrcodeClose = document.getElementById('qrcodeClose');
+const qrcodeBox = document.getElementById('qrcode');
+let qrcodeInstance = null;
+
+function showQr() {
+  // 清空已有二维码
+  qrcodeBox.innerHTML = '';
+  const url = window.location.href;
+  // 生成二维码
+  try {
+    qrcodeInstance = new QRCode(qrcodeBox, { text: url, width: 220, height: 220 });
+  } catch (e) {
+    qrcodeBox.textContent = '无法生成二维码';
+  }
+  qrcodeModal.classList.remove('hidden');
+  qrcodeModal.setAttribute('aria-hidden', 'false');
+}
+
+function hideQr() {
+  qrcodeModal.classList.add('hidden');
+  qrcodeModal.setAttribute('aria-hidden', 'true');
+  if (qrcodeInstance && qrcodeBox) {
+    qrcodeBox.innerHTML = '';
+    qrcodeInstance = null;
+  }
+}
+
+shareBtn && shareBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  showQr();
+});
+
+qrcodeClose && qrcodeClose.addEventListener('click', (e) => {
+  e.preventDefault();
+  hideQr();
+});
+
+// 点击遮罩区关闭
+qrcodeModal && qrcodeModal.addEventListener('click', (e) => {
+  if (e.target === qrcodeModal) hideQr();
+});

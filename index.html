@@ -7,28 +7,41 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main>
-    <h1>互动展厅地图</h1>
-    <p>点击图中的 1 到 9 区域进入对应页面。</p>
-    <div class="canvas-container">
-      <canvas id="floorplan" width="900" height="640"></canvas>
+  <main class="page-content">
+    <div class="title-row">
+      <h1>互动展厅地图</h1>
+      <button id="shareBtn" class="share-button">分享</button>
+    </div>
+    <p class="page-intro">点击图中的 1 到 9 区域进入对应页面。</p>
+    <div class="map-wrapper">
+      <div class="canvas-container">
+        <canvas id="floorplan" width="900" height="640"></canvas>
+      </div>
+      <div id="qrcodeModal" class="qrcode-modal hidden" aria-hidden="true">
+        <div class="qrcode-card">
+          <button id="qrcodeClose" class="qrcode-close">关闭</button>
+          <div id="qrcode" class="qrcode-box"></div>
+          <p class="qrcode-note">扫描二维码，分享本页链接</p>
+        </div>
+      </div>
     </div>
     <div class="legend">
       <h2>展区说明</h2>
       <ol>
         <li>接待室</li>
-        <li><a href="page1.html">第一展区：战略部署</a></li>
-        <li><a href="page2.html">第二展区：进驻宋庄</a></li>
-        <li><a href="page3.html">第三展区：解放天津</a></li>
-        <li><a href="page4.html">老物件陈列</a></li>
-        <li><a href="page5.html">多功能影音室</a></li>
-        <li><a href="page6.html">第四展区：战和博弈</a></li>
-        <li><a href="page7.html">第五展区：保护古都</a></li>
-        <li><a href="page8.html">第六展区：北平解放</a></li>
+        <li>第一展区：战略部署</li>
+        <li>第二展区：进驻宋庄</li>
+        <li>第三展区：解放天津</li>
+        <li>老物件陈列</li>
+        <li>多功能影音室</li>
+        <li>第四展区：战和博弈</li>
+        <li>第五展区：保护古都</li>
+        <li>第六展区：北平解放</li>
         <li>文创商店</li>
       </ol>
     </div>
   </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
