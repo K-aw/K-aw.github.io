@@ -18,6 +18,34 @@ main {
   padding: 24px;
   box-shadow: 0 18px 40px rgba(18, 45, 81, 0.08);
 }
+
+/* --- 标题行布局 --- */
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.title-row h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+/* 分享按钮样式 */
+.share-button {
+  padding: 8px 16px;
+  background: #3366ff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(51,102,255,0.18);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.share-button:active { transform: translateY(1px); }
+
 .page-intro {
   margin-top: 8px;
   margin-bottom: 24px;
@@ -122,72 +150,90 @@ canvas {
   main {
     margin: 16px;
   }
-}
-
-/* Map wrapper and share button */
-.map-wrapper {
-  position: relative;
-}
-.title-row {
-.title-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-.title-row h1 {
-  margin: 0;
-  flex: 1 1 auto;
-}
-.share-button {
-  margin-left: auto;
-  padding: 8px 12px;
-  background: #3366ff;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  box-shadow: 0 8px 18px rgba(51,102,255,0.18);
-  cursor: pointer;
-}
-.share-button:active { transform: translateY(1px); }
-
-@media (max-width: 800px) {
+  /* 手机端标题和按钮改为上下排列 */
   .title-row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
+  }
+  .share-button {
+    width: 100%;
   }
 }
 
-/* QR code modal */
+/* Map wrapper */
+.map-wrapper {
+  position: relative;
+}
+
+/* --- 二维码弹窗样式 (从HTML中合并而来) --- */
 .qrcode-modal {
   position: fixed;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.45);
-  z-index: 1200;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
 }
 .qrcode-modal.hidden { display: none; }
 .qrcode-card {
   position: relative;
   background: #fff;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(18,45,81,0.12);
+  padding: 20px;
+  border-radius: 8px;
   text-align: center;
-  min-width: 240px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 .qrcode-close {
   position: absolute;
-  right: 18px;
-  top: 18px;
-  background: transparent;
+  top: 10px;
+  right: 10px;
+  background: none;
   border: none;
-  color: #666;
+  font-size: 20px;
   cursor: pointer;
+  color: #999;
 }
-.qrcode-box { margin: 8px auto; }
-.qrcode-note { color: #444; margin-top: 8px; }
+.qrcode-box {
+  margin: 10px auto;
+  width: 180px;
+  height: 180px;
+}
+.qrcode-note {
+  color: #444;
+  margin-top: 8px;
+}
+/* 1. 强制二维码容器内的表格边框合并，消除间隙 */
+#qrcode table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+
+/* 2. 关键修复：移除单元格(td)的默认内边距(padding) */
+#qrcode td {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* 3. 确保生成的图片(img)或画布(canvas)没有多余间距 */
+#qrcode img, 
+#qrcode canvas {
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* 4. (可选) 优化弹窗样式，使其更美观 */
+.qrcode-card {
+  /* 增加圆角和内边距，让弹窗看起来更现代 */
+  border-radius: 16px;
+  padding: 24px 32px;
+  min-width: 240px;
+}
+
+.qrcode-box {
+  /* 给二维码周围一点呼吸空间 */
+  margin: 16px auto;
 }

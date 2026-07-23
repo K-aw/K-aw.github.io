@@ -5,26 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>互动展厅地图</title>
   <link rel="stylesheet" href="styles.css" />
+  
 </head>
 <body>
   <main class="page-content">
+    <!-- 标题行：包含标题和按钮 -->
     <div class="title-row">
       <h1>互动展厅地图</h1>
       <button id="shareBtn" class="share-button">分享</button>
     </div>
+
     <p class="page-intro">点击图中的 1 到 10 区域进入对应页面。</p>
+
     <div class="map-wrapper">
       <div class="canvas-container">
         <canvas id="floorplan" width="900" height="640"></canvas>
       </div>
+
+      <!-- 二维码弹窗结构 -->
       <div id="qrcodeModal" class="qrcode-modal hidden" aria-hidden="true">
         <div class="qrcode-card">
-          <button id="qrcodeClose" class="qrcode-close">关闭</button>
+          <button id="qrcodeClose" class="qrcode-close">×</button>
           <div id="qrcode" class="qrcode-box"></div>
-          <p class="qrcode-note">扫描二维码，分享本页链接</p>
+          <p class="qrcode-note">扫码访问当前页面</p>
         </div>
       </div>
     </div>
+
     <div class="legend">
       <h2>展区说明</h2>
       <ol>
@@ -41,7 +48,54 @@
       </ol>
     </div>
   </main>
+
+  <!-- 引入二维码库 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <script>
+    // --- 二维码逻辑脚本 ---
+    document.addEventListener('DOMContentLoaded', function() {
+      var shareBtn = document.getElementById('shareBtn');
+      var modal = document.getElementById('qrcodeModal');
+      var closeBtn = document.getElementById('qrcodeClose');
+      var qrcodeContainer = document.getElementById('qrcode');
+      var qrcodeInstance = null;
+
+      // 点击分享按钮
+      shareBtn.addEventListener('click', function() {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        
+        // 如果还没生成过二维码，则生成
+        if (!qrcodeInstance) {
+          qrcodeInstance = new QRCode(qrcodeContainer, {
+            text: window.location.href,
+            width: 180,
+            height: 180,
+            colorDark : "#cc0000", // 红色主题
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+          });
+        }
+      });
+
+      // 点击关闭按钮
+      closeBtn.addEventListener('click', function() {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      });
+
+      // 点击背景遮罩关闭
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+          modal.setAttribute('aria-hidden', 'true');
+        }
+      });
+    });
+  </script>
+  
+  <!-- 你的主逻辑脚本 -->
   <script src="script.js"></script>
 </body>
 </html>
