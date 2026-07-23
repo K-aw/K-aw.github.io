@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // ============================
-    // 2. 分享与二维码逻辑 (已修复双码、颜色和空白问题)
+    // 2. 分享与二维码逻辑 (终极修复版)
     // ============================
     const shareBtn = document.getElementById('shareBtn');
     const qrcodeModal = document.getElementById('qrcodeModal');
@@ -96,44 +96,59 @@ document.addEventListener('DOMContentLoaded', function() {
     const qrcodeBox = document.getElementById('qrcode');
     
     // 标记是否已经生成过，避免重复生成
-    let isQrGenerated = false; 
+    let isQrGenerated = false;
+    // 【新增】防抖锁，防止重复点击导致闪烁
+    let isGenerating = false;
 
     function showQr() {
-    // 1. 先显示弹窗
-    qrcodeModal.classList.remove('hidden');
-    qrcodeModal.setAttribute('aria-hidden', 'false');
+        // 【新增】如果正在生成或已经生成过，直接返回
+        if (isGenerating || isQrGenerated) return;
 
-    // 2. 只有在第一次打开且未生成时，才执行生成逻辑
-    if (!isQrGenerated && typeof QRCode !== 'undefined') {
-        
-        // 【优化】使用 requestAnimationFrame 确保浏览器完成重绘后再执行
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                // 【关键】彻底清空容器，防止残留
-                qrcodeBox.innerHTML = ''; 
-                
-                // 生成二维码
-                new QRCode(qrcodeBox, { 
-                    text: window.location.href, 
-                    width: 200, 
-                    height: 200,
-                    colorDark : "#000000",   
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
-                });
+        isGenerating = true; // 上锁
 
-                // 【优化】隐藏多余的 canvas (qrcodejs 会同时生成 img 和 canvas)
-                // 延迟一点点确保 DOM 已插入
+        // 1. 先显示弹窗
+        qrcodeModal.classList.remove('hidden');
+        qrcodeModal.setAttribute('aria-hidden', 'false');
+
+        // 2. 只有在第一次打开且未生成时，才执行生成逻辑
+        if (!isQrGenerated && typeof QRCode !== 'undefined') {
+            
+            // 使用 requestAnimationFrame 确保浏览器完成重绘后再执行
+            requestAnimationFrame(() => {
                 setTimeout(() => {
-                    const c = qrcodeBox.querySelector('canvas');
-                    if(c) c.style.display = 'none';
-                    isQrGenerated = true;
-                }, 50);
+                    // 彻底清空容器，防止残留
+                    qrcodeBox.innerHTML = ''; 
+                    
+                    try {
+                        // 生成二维码
+                        new QRCode(qrcodeBox, { 
+                            text: window.location.href, 
+                            width: 200, 
+                            height: 200,
+                            colorDark : "#000000",   
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
 
-            }, 150); // 稍微增加一点延迟到 150ms 更稳妥
-        });
+                        // 【修复】不再用 JS 隐藏 canvas！
+                        // canvas 的隐藏已交给 CSS 处理：
+                        // .qrcode-box canvas { display: none !important; }
+                        // 这样 canvas 从插入 DOM 的那一刻起就不会被渲染，彻底消除闪烁
+
+                        isQrGenerated = true;
+                        isGenerating = false; // 解锁
+                    } catch (e) {
+                        console.error("二维码生成失败:", e);
+                        isGenerating = false; // 出错也要解锁
+                    }
+
+                }, 150); // 给浏览器时间完成弹窗布局
+            });
+        } else {
+            // 如果 QRCode 库未加载，允许下次重试
+            isGenerating = false;
+        }
     }
-}
 
     function hideQr() {
         qrcodeModal.classList.add('hidden');
