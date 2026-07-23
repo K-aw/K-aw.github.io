@@ -87,7 +87,7 @@
 .qrcode-box img,
 .qrcode-box canvas {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   display: block;
   object-fit: contain; /* 保持比例 */
 }

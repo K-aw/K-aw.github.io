@@ -99,38 +99,41 @@ document.addEventListener('DOMContentLoaded', function() {
     let isQrGenerated = false; 
 
     function showQr() {
-        // 1. 先显示弹窗
-        qrcodeModal.classList.remove('hidden');
-        qrcodeModal.setAttribute('aria-hidden', 'false');
+    // 1. 先显示弹窗
+    qrcodeModal.classList.remove('hidden');
+    qrcodeModal.setAttribute('aria-hidden', 'false');
 
-        // 2. 只有在第一次打开且未生成时，才执行生成逻辑
-        if (!isQrGenerated && typeof QRCode !== 'undefined') {
-            
-            // 【关键修复】使用 setTimeout 延时 100ms
-            // 原因：CSS 动画或 display:none 切换瞬间，元素高度为0，会导致二维码渲染失败（空白）
+    // 2. 只有在第一次打开且未生成时，才执行生成逻辑
+    if (!isQrGenerated && typeof QRCode !== 'undefined') {
+        
+        // 【优化】使用 requestAnimationFrame 确保浏览器完成重绘后再执行
+        requestAnimationFrame(() => {
             setTimeout(() => {
+                // 【关键】彻底清空容器，防止残留
                 qrcodeBox.innerHTML = ''; 
                 
+                // 生成二维码
                 new QRCode(qrcodeBox, { 
                     text: window.location.href, 
                     width: 200, 
                     height: 200,
-                    colorDark : "#000000",   // 【修复】改为红色
+                    colorDark : "#000000",   
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.H
                 });
 
-                // 【修复】移除多余的 canvas，只保留 img
-                // 等待一小会儿让库把 DOM 插进去
+                // 【优化】隐藏多余的 canvas (qrcodejs 会同时生成 img 和 canvas)
+                // 延迟一点点确保 DOM 已插入
                 setTimeout(() => {
                     const c = qrcodeBox.querySelector('canvas');
                     if(c) c.style.display = 'none';
                     isQrGenerated = true;
                 }, 50);
 
-            }, 100);
-        }
+            }, 150); // 稍微增加一点延迟到 150ms 更稳妥
+        });
     }
+}
 
     function hideQr() {
         qrcodeModal.classList.add('hidden');
