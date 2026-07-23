@@ -129,13 +129,18 @@ canvas {
   position: relative;
 }
 .title-row {
+.title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+  width: 100%;
+}
+.title-row h1 {
+  margin: 0;
+  flex: 1 1 auto;
 }
 .share-button {
-  margin-left: 12px;
+  margin-left: auto;
   padding: 8px 12px;
   background: #3366ff;
   color: #fff;
@@ -185,3 +190,4 @@ canvas {
 }
 .qrcode-box { margin: 8px auto; }
 .qrcode-note { color: #444; margin-top: 8px; }
+}
