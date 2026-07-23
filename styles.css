@@ -84,12 +84,16 @@
 }
 
 /* 强制二维码内部元素填满容器 */
-.qrcode-box img,
+/* canvas 必须隐藏，只保留 img */
 .qrcode-box canvas {
+  display: none !important;
+}
+
+.qrcode-box img {
   width: 100% !important;
   height: auto !important;
   display: block;
-  object-fit: contain; /* 保持比例 */
+  object-fit: contain;
 }
 
 .qrcode-note {
