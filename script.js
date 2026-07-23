@@ -1,16 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     // ============================
-    // 1. Canvas 地图逻辑 (已优化)
+    // 1. Canvas 地图逻辑 (保持不变)
     // ============================
     const canvas = document.getElementById("floorplan");
     
-    // 只有当页面上有 canvas 时才执行绘图，防止报错阻断后续代码
     if (canvas) {
         const ctx = canvas.getContext("2d");
         const image = new Image();
 
-        // 这里的坐标是基于 Canvas 原始尺寸 (width="900" height="640") 的
         const hitAreas = [
             { id: 1, x: 835, y: 510, radius: 80 },
             { id: 2, x: 835, y: 320, radius: 80 },
@@ -22,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 8, x: 100, y: 510, radius: 80 },
         ];
 
-        // 增加错误处理，如果图片加载失败会在控制台提示
         image.onerror = () => console.error("图片加载失败，请检查路径 img/平面绘制图.jpg");
         
         image.onload = () => {
@@ -30,11 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         image.src = "img/平面绘制图.jpg";
 
-        // --- 核心交互逻辑 ---
-
         function getCanvasPoint(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            // 动态计算缩放比例，适配手机屏幕
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             return {
@@ -75,10 +69,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 150);
         }
 
-        // PC端点击
         canvas.addEventListener("click", (e) => handleTap(e.clientX, e.clientY));
         
-        // 移动端触摸
         canvas.addEventListener("touchend", (e) => {
             if (!e.changedTouches || e.changedTouches.length === 0) return;
             const touch = e.changedTouches[0];
@@ -88,64 +80,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // ============================
-    // 2. 分享与二维码逻辑 (终极修复版)
+    // 2. 分享与二维码逻辑 (最终修复版)
     // ============================
     const shareBtn = document.getElementById('shareBtn');
     const qrcodeModal = document.getElementById('qrcodeModal');
     const qrcodeClose = document.getElementById('qrcodeClose');
     const qrcodeBox = document.getElementById('qrcode');
     
-    // 标记是否已经生成过，避免重复生成
-    let isQrGenerated = false;
-    // 【新增】防抖锁，防止重复点击导致闪烁
-    let isGenerating = false;
+    let isQrGenerated = false; 
+    let isGenerating = false; // 防抖锁
 
     function showQr() {
-        // 【新增】如果正在生成或已经生成过，直接返回
+        // 防止重复点击
         if (isGenerating || isQrGenerated) return;
+        
+        isGenerating = true;
 
-        isGenerating = true; // 上锁
-
-        // 1. 先显示弹窗
+        // 1. 显示弹窗
         qrcodeModal.classList.remove('hidden');
         qrcodeModal.setAttribute('aria-hidden', 'false');
 
-        // 2. 只有在第一次打开且未生成时，才执行生成逻辑
+        // 2. 生成二维码
         if (!isQrGenerated && typeof QRCode !== 'undefined') {
-            
-            // 使用 requestAnimationFrame 确保浏览器完成重绘后再执行
             requestAnimationFrame(() => {
-                setTimeout(() => {
-                    // 彻底清空容器，防止残留
-                    qrcodeBox.innerHTML = ''; 
-                    
-                    try {
-                        // 生成二维码
-                        new QRCode(qrcodeBox, { 
-                            text: window.location.href, 
-                            width: 200, 
-                            height: 200,
-                            colorDark : "#000000",   
-                            colorLight : "#ffffff",
-                            correctLevel : QRCode.CorrectLevel.H
-                        });
+                // 关键修复：在生成前彻底清空容器
+                // 这能防止 HTML 中残留的旧代码干扰
+                qrcodeBox.innerHTML = ''; 
+                
+                try {
+                    new QRCode(qrcodeBox, { 
+                        text: window.location.href, 
+                        width: 200, 
+                        height: 200,
+                        colorDark : "#000000",   
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
 
-                        // 【修复】不再用 JS 隐藏 canvas！
-                        // canvas 的隐藏已交给 CSS 处理：
-                        // .qrcode-box canvas { display: none !important; }
-                        // 这样 canvas 从插入 DOM 的那一刻起就不会被渲染，彻底消除闪烁
-
-                        isQrGenerated = true;
-                        isGenerating = false; // 解锁
-                    } catch (e) {
-                        console.error("二维码生成失败:", e);
-                        isGenerating = false; // 出错也要解锁
-                    }
-
-                }, 150); // 给浏览器时间完成弹窗布局
+                    // 关键修复：不再使用 JS 删除 Canvas
+                    // 依赖 CSS 的 display: none 来隐藏 Canvas
+                    // 这样浏览器渲染时根本不会去绘制它，彻底消除闪烁
+                    isQrGenerated = true;
+                    isGenerating = false;
+                } catch (e) {
+                    console.error("二维码生成失败:", e);
+                    isGenerating = false;
+                }
             });
         } else {
-            // 如果 QRCode 库未加载，允许下次重试
             isGenerating = false;
         }
     }
@@ -155,17 +137,8 @@ document.addEventListener('DOMContentLoaded', function() {
         qrcodeModal.setAttribute('aria-hidden', 'true');
     }
 
-    if (shareBtn) {
-        shareBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showQr();
-        });
-    }
-
-    if (qrcodeClose) {
-        qrcodeClose.addEventListener('click', hideQr);
-    }
-
+    if (shareBtn) shareBtn.addEventListener('click', (e) => { e.preventDefault(); showQr(); });
+    if (qrcodeClose) qrcodeClose.addEventListener('click', hideQr);
     if (qrcodeModal) {
         qrcodeModal.addEventListener('click', (e) => {
             if (e.target === qrcodeModal) hideQr();

@@ -53,58 +53,6 @@
   <!-- 引入二维码库 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var shareBtn = document.getElementById('shareBtn');
-    var modal = document.getElementById('qrcodeModal');
-    var closeBtn = document.getElementById('qrcodeClose');
-    var qrcodeContainer = document.getElementById('qrcode');
-    var qrcodeInstance = null;
-
-    // 打开弹窗并生成二维码
-    shareBtn.addEventListener('click', function() {
-      modal.classList.remove('hidden');
-      modal.setAttribute('aria-hidden', 'false');
-
-      // 如果还没生成过，则生成
-      if (!qrcodeInstance) {
-        qrcodeInstance = new QRCode(qrcodeContainer, {
-          text: window.location.href,
-          width: 200,
-          height: 200,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-
-        // 修复：移除多余的 canvas，只保留 img
-        setTimeout(function() {
-          var canvas = qrcodeContainer.querySelector('canvas');
-          var img = qrcodeContainer.querySelector('img');
-          if (canvas && img) {
-            canvas.remove();
-          }
-        }, 0);
-      }
-    });
-
-    // 关闭函数
-    function closeModal() {
-      modal.classList.add('hidden');
-      modal.setAttribute('aria-hidden', 'true');
-    }
-
-    // 点击关闭按钮
-    closeBtn.addEventListener('click', closeModal);
-
-    // 点击遮罩层（屏幕周边）关闭
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
-  });
-</script>
   
   <!-- 你的主逻辑脚本 -->
   <script src="script.js"></script>
