@@ -92,64 +92,101 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ============================
-// 2. 分享与二维码逻辑 (修正版)
+// 2. 分享与二维码逻辑 (调试增强版)
 // ============================
 const shareBtn = document.getElementById('shareBtn');
 const qrcodeModal = document.getElementById('qrcodeModal');
 const qrcodeClose = document.getElementById('qrcodeClose');
 const qrcodeBox = document.getElementById('qrcode');
 
+console.log('🔍 调试信息:', {
+    '弹窗元素': qrcodeModal,
+    '二维码容器': qrcodeBox,
+    'QRCode库': typeof QRCode
+});
+
 function showQr() {
-    if (!qrcodeModal || !qrcodeBox) return;
+    console.log('👉 点击了分享按钮');
+
+    // 【关键修改】如果找不到元素，打印具体是哪个没找到，而不是直接 return
+    if (!qrcodeModal) {
+        console.error('❌ 错误：找不到 id="qrcodeModal" 的弹窗！请检查 HTML 中是否有该 ID。');
+        alert('系统错误：弹窗元素丢失');
+        return;
+    }
+    if (!qrcodeBox) {
+        console.error('❌ 错误：找不到 id="qrcode" 的容器！');
+        return;
+    }
 
     // 1. 显示弹窗
     qrcodeModal.classList.remove('hidden');
-    
-    // 2. 【新增】告诉辅助技术：这个弹窗现在可见了，不要隐藏它
     qrcodeModal.setAttribute('aria-hidden', 'false');
+    console.log('✅ 弹窗已显示');
 
-    // 3. 每次打开都强制清空旧内容
+    // 2. 清空旧内容
     qrcodeBox.innerHTML = ''; 
 
-    // 4. 先放入"加载中"的文字
+    // 3. 放入"加载中"文字
     const loadingText = document.createElement('div');
     loadingText.className = 'qrcode-loading-text';
     loadingText.innerText = '二维码加载中...';
+    loadingText.style.color = '#666'; // 确保文字颜色可见
     qrcodeBox.appendChild(loadingText);
+    console.log('✅ "加载中"文字已插入');
 
-    // 5. 生成二维码
+    // 4. 生成二维码
     if (typeof QRCode !== 'undefined') {
-        new QRCode(qrcodeBox, { 
-            text: window.location.href, 
-            width: 200, 
-            height: 200,
-            colorDark : "#000000",   
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
+        try {
+            new QRCode(qrcodeBox, { 
+                text: window.location.href, 
+                width: 200, 
+                height: 200,
+                colorDark : "#000000",   
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+            console.log('✅ QRCode 实例已创建');
 
-        // 6. 生成后移除加载文字
-        setTimeout(() => {
-            if (qrcodeBox.querySelector('img')) {
-                loadingText.remove();
-            }
-        }, 100);
+            // 5. 延迟移除加载文字
+            setTimeout(() => {
+                if (qrcodeBox.querySelector('img')) {
+                    loadingText.remove();
+                    console.log('✅ 二维码图片已显示，加载文字已移除');
+                } else {
+                    console.warn('⚠️ 超时：未检测到 img 标签，可能是 CSS 隐藏了图片');
+                }
+            }, 500); // 稍微延长一点时间
+            
+        } catch (e) {
+            console.error('❌ QRCode 生成报错:', e);
+            loadingText.innerText = '生成出错';
+        }
         
     } else {
-        console.error("QRCode库未加载");
+        console.error("❌ QRCode库未加载");
         loadingText.innerText = '加载失败，请刷新';
         loadingText.style.color = '#ff4d4f';
     }
 }
 
 function hideQr() {
-    qrcodeModal.classList.add('hidden');
-    qrcodeModal.setAttribute('aria-hidden', 'true');
-    // 可选：关闭时也可以清空，保持干净
-    // qrcodeBox.innerHTML = ''; 
+    if (qrcodeModal) {
+        qrcodeModal.classList.add('hidden');
+        qrcodeModal.setAttribute('aria-hidden', 'true');
+    }
 }
 
-if (shareBtn) shareBtn.addEventListener('click', (e) => { e.preventDefault(); showQr(); });
+// 绑定事件
+if (shareBtn) {
+    shareBtn.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        showQr(); 
+    });
+} else {
+    console.error('❌ 找不到 id="shareBtn" 的按钮');
+}
+
 if (qrcodeClose) qrcodeClose.addEventListener('click', hideQr);
 if (qrcodeModal) {
     qrcodeModal.addEventListener('click', (e) => {
