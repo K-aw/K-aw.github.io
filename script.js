@@ -100,20 +100,24 @@ const qrcodeClose = document.getElementById('qrcodeClose');
 const qrcodeBox = document.getElementById('qrcode');
 
 function showQr() {
+    if (!qrcodeModal || !qrcodeBox) return;
+
     // 1. 显示弹窗
     qrcodeModal.classList.remove('hidden');
+    
+    // 2. 【新增】告诉辅助技术：这个弹窗现在可见了，不要隐藏它
     qrcodeModal.setAttribute('aria-hidden', 'false');
 
-    // 2. 每次打开都强制清空旧内容
+    // 3. 每次打开都强制清空旧内容
     qrcodeBox.innerHTML = ''; 
 
-    // 3. 先放入"加载中"的文字
+    // 4. 先放入"加载中"的文字
     const loadingText = document.createElement('div');
     loadingText.className = 'qrcode-loading-text';
     loadingText.innerText = '二维码加载中...';
     qrcodeBox.appendChild(loadingText);
 
-    // 4. 生成二维码
+    // 5. 生成二维码
     if (typeof QRCode !== 'undefined') {
         new QRCode(qrcodeBox, { 
             text: window.location.href, 
@@ -124,13 +128,17 @@ function showQr() {
             correctLevel : QRCode.CorrectLevel.H
         });
 
-        // 5. 【新增】qrcodejs 是同步生成的，执行到这里说明图片已插入
-        //    直接移除加载文字即可
-        loadingText.remove();
+        // 6. 生成后移除加载文字
+        setTimeout(() => {
+            if (qrcodeBox.querySelector('img')) {
+                loadingText.remove();
+            }
+        }, 100);
+        
     } else {
         console.error("QRCode库未加载");
         loadingText.innerText = '加载失败，请刷新';
-        loadingText.style.color = 'red';
+        loadingText.style.color = '#ff4d4f';
     }
 }
 
