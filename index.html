@@ -25,14 +25,17 @@
         </canvas>
       </div>
 
-      <!-- 二维码弹窗结构 -->
-      <div id="qrcodeModal" class="qrcode-modal hidden" aria-hidden="true">
-        <div class="qrcode-card">
-          <button id="qrcodeClose" class="qrcode-close">×</button>
-          <div id="qrcode" class="qrcode-box"></div>
-          <p class="qrcode-note">分享</p>
+    <div id="qrcodeModal" class="qrcode-modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <!-- 标题和关闭按钮保持不变 -->
+            <h3>扫码分享给朋友</h3>
+            <button id="qrcodeClose">&times;</button>
+            
+            <!-- ⚠️ 注意这里：改用 canvas 标签，并设置好宽高 -->
+            <canvas id="qrcodeCanvas" width="200" height="200"></canvas>
+            
+            <p class="qr-tip">打开手机相机扫一扫</p>
         </div>
-      </div>
     </div>
 
     <div class="legend">
@@ -53,7 +56,7 @@
   </main>
 
   <!-- 引入二维码库 -->
-  <script src="qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <!-- 引入主逻辑脚本 -->
   <script src="script.js"></script>
 </body>

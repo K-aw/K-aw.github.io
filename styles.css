@@ -70,7 +70,7 @@
 }
 
 /* ============================
-   2. 修复二维码弹窗 (最终整合版)
+   2. 二维码弹窗 (适配新 HTML + 保留动画)
    ============================ */
 .qrcode-modal {
   position: fixed;
@@ -80,7 +80,7 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.6);
   z-index: 9999;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px); /* 毛玻璃背景 */
 
   /* 淡入淡出动画 */
   opacity: 0;
@@ -93,13 +93,8 @@
   visibility: visible;
 }
 
-.qrcode-modal.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.qrcode-card {
+/* 弹窗卡片容器 (对应 HTML 中的 .modal-content) */
+.modal-content {
   position: relative;
   background: #ffffff;
   padding: 24px;
@@ -108,17 +103,19 @@
   text-align: center;
   max-width: 90vw;
   min-width: 280px;
+  width: 320px; /* 固定宽度防止抖动 */
 
-  /* 卡片弹跳动画 */
+  /* 卡片弹跳动画 (保留之前的 cubic-bezier) */
   transform: scale(0.95);
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.qrcode-modal:not(.hidden) .qrcode-card {
+.qrcode-modal:not(.hidden) .modal-content {
   transform: scale(1);
 }
 
-.qrcode-close {
+/* 关闭按钮 (对应 HTML 中的 #qrcodeClose) */
+#qrcodeClose {
   position: absolute;
   top: -10px;
   right: -10px;
@@ -139,53 +136,25 @@
   z-index: 10;
 }
 
-.qrcode-close:hover {
+#qrcodeClose:hover {
   background: #f0f0f0;
   color: #333;
   transform: rotate(90deg);
 }
 
-.qrcode-box {
+/* 二维码画布容器 (对应 HTML 中的 canvas) */
+#qrcodeCanvas {
   margin: 10px auto;
-  width: 200px;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.qrcode-loading-text {
-  color: #999;
-  font-size: 14px;
-}
-
-.qrcode-box canvas {
-  display: none !important;
-}
-
-.qrcode-box img {
-  width: 100% !important;
-  height: auto !important;
-  display: block;
-  object-fit: contain;
+  display: block; /* 必须显示！之前是 none */
   border-radius: 4px;
+  background: #fff; /* 防止透明背景导致看不清 */
 }
 
-.qrcode-note {
+/* 底部提示文字 */
+.qr-tip {
   color: #666;
   margin-top: 12px;
   font-size: 14px;
-}
-
-#qrcode table {
-  border-collapse: collapse !important;
-  border-spacing: 0 !important;
-}
-#qrcode td {
-  padding: 0 !important;
-  border: none !important;
 }
 
 /* ============================
