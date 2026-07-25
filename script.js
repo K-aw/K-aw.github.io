@@ -1,29 +1,41 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     // ============================
-    // 1. Canvas 地图逻辑 (保持不变)
+    // 1. Canvas 地图逻辑
     // ============================
     const canvas = document.getElementById("floorplan");
     
     if (canvas) {
         const ctx = canvas.getContext("2d");
         const image = new Image();
+        const container = canvas.parentElement; // .canvas-container
 
         const hitAreas = [
             { id: 1, x: 835, y: 510, radius: 80 },
             { id: 2, x: 835, y: 320, radius: 80 },
             { id: 3, x: 560, y: 320, radius: 80 },
-            { id: 4, x: 690, y: 90, radius: 90 },
-            { id: 5, x: 250, y: 90, radius: 90 },
+            { id: 4, x: 690, y: 90,  radius: 90 },
+            { id: 5, x: 250, y: 90,  radius: 90 },
             { id: 6, x: 390, y: 320, radius: 80 },
             { id: 7, x: 100, y: 320, radius: 80 },
             { id: 8, x: 100, y: 510, radius: 80 },
         ];
 
-        image.onerror = () => console.error("图片加载失败，请检查路径 img/平面绘制图.jpg");
+        // ★ 新增：页面初始化时，给容器加上 loading 类，显示骨架屏
+        container.classList.add('loading');
+
+        image.onerror = () => {
+            console.error("图片加载失败，请检查路径 img/平面绘制图.jpg");
+            // ★ 新增：加载失败也要关掉骨架屏，避免一直卡住
+            container.classList.remove('loading');
+            canvas.classList.add('loaded');
+        };
         
         image.onload = () => {
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            // ★ 新增：图片绘制完成后，关掉骨架屏 + 淡入 canvas
+            container.classList.remove('loading');
+            canvas.classList.add('loaded');
         };
         image.src = "img/平面绘制图.jpg";
 
@@ -79,69 +91,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // ============================
-    // 2. 分享与二维码逻辑 (最终修复版)
-    // ============================
-    const shareBtn = document.getElementById('shareBtn');
-    const qrcodeModal = document.getElementById('qrcodeModal');
-    const qrcodeClose = document.getElementById('qrcodeClose');
-    const qrcodeBox = document.getElementById('qrcode');
-    
-    let isQrGenerated = false; 
-    let isGenerating = false; // 防抖锁
+// ============================
+// 2. 分享与二维码逻辑 (修正版)
+// ============================
+const shareBtn = document.getElementById('shareBtn');
+const qrcodeModal = document.getElementById('qrcodeModal');
+const qrcodeClose = document.getElementById('qrcodeClose');
+const qrcodeBox = document.getElementById('qrcode');
 
-    function showQr() {
-        // 防止重复点击
-        if (isGenerating || isQrGenerated) return;
-        
-        isGenerating = true;
+function showQr() {
+    // 1. 显示弹窗
+    qrcodeModal.classList.remove('hidden');
+    qrcodeModal.setAttribute('aria-hidden', 'false');
 
-        // 1. 显示弹窗
-        qrcodeModal.classList.remove('hidden');
-        qrcodeModal.setAttribute('aria-hidden', 'false');
+    // 2. 每次打开都强制清空旧内容
+    qrcodeBox.innerHTML = ''; 
 
-        // 2. 生成二维码
-        if (!isQrGenerated && typeof QRCode !== 'undefined') {
-            requestAnimationFrame(() => {
-                // 关键修复：在生成前彻底清空容器
-                // 这能防止 HTML 中残留的旧代码干扰
-                qrcodeBox.innerHTML = ''; 
-                
-                try {
-                    new QRCode(qrcodeBox, { 
-                        text: window.location.href, 
-                        width: 200, 
-                        height: 200,
-                        colorDark : "#000000",   
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
+    // 3. 先放入"加载中"的文字
+    const loadingText = document.createElement('div');
+    loadingText.className = 'qrcode-loading-text';
+    loadingText.innerText = '二维码加载中...';
+    qrcodeBox.appendChild(loadingText);
 
-                    // 关键修复：不再使用 JS 删除 Canvas
-                    // 依赖 CSS 的 display: none 来隐藏 Canvas
-                    // 这样浏览器渲染时根本不会去绘制它，彻底消除闪烁
-                    isQrGenerated = true;
-                    isGenerating = false;
-                } catch (e) {
-                    console.error("二维码生成失败:", e);
-                    isGenerating = false;
-                }
-            });
-        } else {
-            isGenerating = false;
-        }
-    }
-
-    function hideQr() {
-        qrcodeModal.classList.add('hidden');
-        qrcodeModal.setAttribute('aria-hidden', 'true');
-    }
-
-    if (shareBtn) shareBtn.addEventListener('click', (e) => { e.preventDefault(); showQr(); });
-    if (qrcodeClose) qrcodeClose.addEventListener('click', hideQr);
-    if (qrcodeModal) {
-        qrcodeModal.addEventListener('click', (e) => {
-            if (e.target === qrcodeModal) hideQr();
+    // 4. 生成二维码
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(qrcodeBox, { 
+            text: window.location.href, 
+            width: 200, 
+            height: 200,
+            colorDark : "#000000",   
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
         });
+
+        // 5. 【新增】qrcodejs 是同步生成的，执行到这里说明图片已插入
+        //    直接移除加载文字即可
+        loadingText.remove();
+    } else {
+        console.error("QRCode库未加载");
+        loadingText.innerText = '加载失败，请刷新';
+        loadingText.style.color = 'red';
     }
-});
+}
+
+function hideQr() {
+    qrcodeModal.classList.add('hidden');
+    qrcodeModal.setAttribute('aria-hidden', 'true');
+    // 可选：关闭时也可以清空，保持干净
+    // qrcodeBox.innerHTML = ''; 
+}
+
+if (shareBtn) shareBtn.addEventListener('click', (e) => { e.preventDefault(); showQr(); });
+if (qrcodeClose) qrcodeClose.addEventListener('click', hideQr);
+if (qrcodeModal) {
+    qrcodeModal.addEventListener('click', (e) => {
+        if (e.target === qrcodeModal) hideQr();
+    });
+}});

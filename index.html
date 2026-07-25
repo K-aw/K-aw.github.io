@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>互动展厅地图</title>
+  <!-- 引入外部样式表 -->
   <link rel="stylesheet" href="styles.css" />
-  
 </head>
 <body>
   <main class="page-content">
@@ -19,8 +19,10 @@
 
     <div class="map-wrapper">
       <div class="canvas-container">
+        <!-- 这里的 canvas 会覆盖在图片上 -->
         <canvas id="floorplan" width="900" height="640">
-        <img src="img/平面绘制图.jpg" alt="展厅平面图"></canvas>
+          <img src="img/平面绘制图.jpg" alt="展厅平面图">
+        </canvas>
       </div>
 
       <!-- 二维码弹窗结构 -->
@@ -51,10 +53,8 @@
   </main>
 
   <!-- 引入二维码库 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  
-  
-  <!-- 你的主逻辑脚本 -->
+  <script src="qrcode.min.js"></script>
+  <!-- 引入主逻辑脚本 -->
   <script src="script.js"></script>
 </body>
 </html>
